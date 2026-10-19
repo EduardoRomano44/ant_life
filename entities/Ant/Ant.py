@@ -1,0 +1,78 @@
+from entities.Ant.Ant_State import Searching, Returning, Dead
+import random
+
+class Ant:
+    search, returning, dead = Searching(), Returning(), Dead()
+    transitions = {
+        (search, "gather"): returning,
+        (returning, "deposit"): search,
+        (search, "age limit"): dead,
+        (search, "poison"): dead,
+        (returning, "age limit"): dead,
+        (returning, "poison"): dead
+    }
+
+    directions = {
+        "up": (0, -1),
+        "down": (0, 1),
+        "left": (-1, 0),
+        "right": (1, 0)
+    }
+
+    def __init__(self, name, location, subject=None):
+        self.name = name
+        self.location = location
+        self.home_location = location
+        self.subject = subject
+        self.current = Searching()
+        self.current.enter(self)
+        self.age = 0
+        self.bag = None
+    
+    def change(self, target, event=None):
+        if target is self.current:
+            return
+        self.current.exit(self)
+        self.current = target
+        self.current.enter(self, event)
+
+    def tick(self, event=None):
+        target = Ant.transitions.get((self.current, event))
+        if target is not None:
+            self.change(target, event)
+        self.current.update(self)
+        self.age += 1
+    
+    def move(self, direction):
+        self.location += Ant.directions[direction]
+
+    def move_home(self):
+        if self.location != self.home_location:
+            self.move(self.get_direction(self.home_location))
+    
+    def get_direction(self, location):
+        if self.location[0] < location[0]:
+            return "right"
+        elif self.location[0] > location[0]:
+            return "left"
+        elif self.location[1] < location[1]:
+            return "down"
+        elif self.location[1] > location[1]:
+            return "up"
+    
+    def move_random(self):
+        self.move(random.choice(list(Ant.directions.keys())))
+
+    def collect_resource(self, resource):
+        if resource.pickup(self.location) and self.bag is None:
+            self.bag = resource
+            return True
+        return False
+    
+    def deposit_resource(self):
+        if self.location == self.home_location and self.bag is not None:
+            self.bag = None
+            if self.subject:
+                self.subject.notify("resource_received", context={"resource": self.bag, "ant": self})
+            return True
+        return False
