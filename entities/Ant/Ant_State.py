@@ -1,5 +1,5 @@
 class Ant_State:
-    def enter(self, ant):
+    def enter(self, ant, event=None):
         pass
 
     def update(self, ant):
@@ -9,36 +9,38 @@ class Ant_State:
         pass
 
 class Searching(Ant_State):
-    def enter(self, ant):
-        print(ant + " started searching")
+    def enter(self, ant, event=None):
+        print(ant.name + " started searching")
 
     def update(self, ant):
-        if ant.age > 100:
+        if ant.age >= 700:
             ant.change(ant.dead, "age limit")
             return
         
-        ant.move_random()
+        if ant.age % 4 == 0:
+            ant.move_random()
+        else:
+            ant.move_front()
 
     def exit(self, ant):
         print(ant.name + " found a resource")
-        ant.collect_resource()
 
 class Returning(Ant_State):
-    def enter(self, ant):
+    def enter(self, ant, event=None):
         print(ant.name + " started returning")
 
     def update(self, ant):
-        if ant.age > 100:
+        if ant.age >= 700:
             ant.change(ant.dead, "age limit")
             return
         
         ant.move_home()
+        if ant.deposit_resource():
+            ant.change(ant.search, "deposit")
 
     def exit(self, ant):
         print(ant.name + " reached home")
-        ant.deposit_resource()
 
 class Dead(Ant_State):
-    def enter(self, ant, cause):
-        print(ant.name + " died of " + cause)
-    
+    def enter(self, ant, event=None):
+        print(ant.name + " died of " + str(event))

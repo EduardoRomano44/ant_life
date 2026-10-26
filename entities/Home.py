@@ -5,7 +5,7 @@ from logic.observer import Subject
 class Home:
     """Represents the ant colony home nest and acts as an observer for delivered resources."""
 
-    def __init__(self, location=(0, 0), subject=None):
+    def __init__(self, location=(0, 0), subject=None, starting_ants=3):
         self.location = location
         self.ants = []
         self.food_in_home = 0
@@ -14,6 +14,8 @@ class Home:
         # Re-use or initialize the event bus for colony events
         self.subject = subject if subject is not None else Subject()
         self.subject.register("resource_received", self.on_resource_received)
+        for _ in range(starting_ants):
+            self.add_ant()
     
     def on_resource_received(self, context=None):
         """Handles resource delivery notifications and attempts to spawn new ants."""
@@ -45,4 +47,3 @@ class Home:
         index = self.ant_index
         self.ant_index += 1
         return "Ant" + str(index)
-    

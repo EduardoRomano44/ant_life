@@ -4,7 +4,12 @@ class Resourse:
 
     @staticmethod
     def get_starting_positions(positions):
-        return {(x, y) for x in range(positions[0], positions[1]) for y in range(positions[0], positions[0] + positions[2])}
+        start, right_size, down_size = positions
+        return {
+            (x, y)
+            for x in range(start[0], start[0] + right_size)
+            for y in range(start[1], start[1] + down_size)
+        }
         
     def pickup(self, position):
         if position in self.positions:
@@ -22,5 +27,4 @@ class Food(Resourse):
 class Water(Resourse):
     def __init__(self, positions):
         super().__init__(positions)
-
     
